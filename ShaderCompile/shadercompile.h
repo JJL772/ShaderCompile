@@ -70,6 +70,11 @@ static inline errno_t _strupr_s(char* __restrict s)
 	return 0;
 }
 
+static inline int _stricmp(const char* __restrict a, const char* __restrict b)
+{
+	return strcasecmp(a, b);
+}
+
 
 static inline void Sleep(DWORD dwMillis)
 {
