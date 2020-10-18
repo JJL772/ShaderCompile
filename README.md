@@ -31,10 +31,16 @@ All shader models starting from PS2.b/VS2.0
 &NewLine;  
 &NewLine;  
 Valid options for  `-ver`
-```
-20          ps2b/vs20
-30          ps30/vs30
-```
+
+|Option|Version|
+|---|---|
+|20|ps2b/vs20|
+|30|ps30/vs30|
+|40|ps40/vs40|
+|41|ps41/vs41|
+|50|ps50/vs50|
+|51|ps51/vs51|
+
 ## Getting started
 This assumes you have "clean" Source SDK2013 project.
 1. In `game_shader_dx9_base.vpc` replace `$AdditionalIncludeDirectories	"$BASE;fxctmp9;vshtmp9;"`
