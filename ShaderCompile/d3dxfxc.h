@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2006, Valve Corporation, All rights reserved. =======//
+//====== Copyright ï¿½ 1996-2006, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: D3DX command implementation.
 //
@@ -6,11 +6,10 @@
 //
 //=============================================================================//
 
-#ifndef D3DXFXC_H
-#define D3DXFXC_H
-#ifdef _WIN32
-	#pragma once
-#endif
+#pragma once
+
+#include <vector>
+#include <string>
 
 #include "basetypes.h"
 #include "cmdsink.h"
@@ -53,5 +52,3 @@ namespace InterceptFxc
 bool TryExecuteCommand( const char* pCommand, CmdSink::IResponse** ppResponse, unsigned long flags );
 
 }; // namespace InterceptFxc
-
-#endif // #ifndef D3DXFXC_H

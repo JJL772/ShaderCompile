@@ -13,7 +13,11 @@ using byte = std::uint8_t;
 #ifdef _DEBUG
 	#define Assert assert
 #else
+#ifdef _WIN32
 	#define Assert __noop
+#else
+	#define Assert(x)
+#endif
 #endif
 
 #endif // BASETYPES_H

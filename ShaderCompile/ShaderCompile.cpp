@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -15,10 +15,12 @@
 #define NOIME
 #define NOMINMAX
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
-#include "DbgHelp.h"
-#include "d3dcompiler.h"
+#include "shadercompile.h"
+
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -27,6 +29,12 @@
 #include <iomanip>
 #include <regex>
 #include <thread>
+
+/* arch specific includes */
+#if defined(__x86_64) || defined(_WIN32)
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#endif
 
 #include "basetypes.h"
 #include "cfgprocessor.h"
@@ -59,7 +67,9 @@ extern "C" {
 
 #include "LZMA.hpp"
 
+#ifdef _WIN32
 #pragma comment( lib, "DbgHelp" )
+#endif
 
 // Type conversions should be controlled by programmer explicitly - shadercompile makes use of 64-bit integer arithmetics
 #pragma warning( error : 4244 )
@@ -298,26 +308,45 @@ class CThreadLocal
 public:
 	CThreadLocal()
 	{
+#ifdef _WIN32
 		m_index = TlsAlloc();
+#else
+		m_ptr = (T*)malloc(sizeof(T));
+#endif
 	}
 
 	~CThreadLocal()
 	{
+#ifdef _WIN32
 		TlsFree( m_index );
+#else
+		free(m_ptr);
+#endif
 	}
 
 	[[nodiscard]] T Get() const
 	{
+#ifdef _WIN32
 		return reinterpret_cast<T>( TlsGetValue( m_index ) );
+#else
+		return *m_ptr;
+#endif
 	}
 
 	void Set( T val )
 	{
+#ifdef _WIN32
 		TlsSetValue( m_index, reinterpret_cast<void*>( val ) );
+#else
+		*m_ptr = val;
+#endif
 	}
 
 private:
 	uint32_t m_index;
+#ifdef __linux__
+	T* m_ptr;
+#endif
 };
 
 enum Mode
@@ -978,7 +1007,8 @@ void CWorkerAccumState<TMutexType>::HandleCommandResponse( CfgProcessor::ComboHa
 		char chUnreportedListing[0xFF];
 		if ( !szListing )
 		{
-			sprintf_s( chUnreportedListing, "%s(0,0): error 0000: Compiler failed without error description. Command number %llu", pEntryInfo->m_szShaderFileName, iCommandNumber );
+			// How did this work in the first place??
+			sprintf( chUnreportedListing, "%s(0,0): error 0000: Compiler failed without error description. Command number %llu", pEntryInfo->m_szShaderFileName, iCommandNumber );
 			szListing = chUnreportedListing;
 		}
 
@@ -1370,6 +1400,8 @@ static void CompileShaders()
 	std::cout << "\r                                                                                           \r";
 }
 
+// Exceptions only supported on Windows. Linux and other unix systems will create core dumps depending on user settings
+#ifdef _WIN32
 static LONG WINAPI ExceptionFilter( _EXCEPTION_POINTERS* pExceptionInfo )
 {
 	constexpr const auto iType = static_cast<MINIDUMP_TYPE>( MiniDumpNormal | MiniDumpWithDataSegs | MiniDumpWithIndirectlyReferencedMemory | MiniDumpWithThreadInfo );
@@ -1432,6 +1464,7 @@ static LONG WINAPI ExceptionFilter( _EXCEPTION_POINTERS* pExceptionInfo )
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
+#endif
 
 static void PrintCompileErrors()
 {
