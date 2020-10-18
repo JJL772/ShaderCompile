@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #endif
 
@@ -42,6 +43,33 @@ static inline errno_t strcat_s(char* __restrict dest, size_t sz, const char* __r
 	strncat(dest, src, sz);
 	return errno;
 }
+
+static inline errno_t strcpy_s(char* __restrict dest, size_t sz, const char* __restrict src)
+{
+	strncpy(dest, src, sz);
+	return errno;
+}
+
+static inline errno_t strcpy_s(char* __restrict dest, const char* __restrict src)
+{
+	strcpy(dest, src);
+	return errno;
+}
+
+static inline errno_t _strupr_s(char* __restrict s, size_t sz)
+{
+	for(char* c = &s[0]; *c && sz >= 0; c++, sz--)
+		*c = toupper(*c);
+	return 0;
+}
+
+static inline errno_t _strupr_s(char* __restrict s)
+{
+	for(char* c = &s[0]; *c; c++)
+		*c = toupper(*c);
+	return 0;
+}
+
 
 static inline void Sleep(DWORD dwMillis)
 {

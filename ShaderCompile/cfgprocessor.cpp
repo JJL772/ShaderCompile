@@ -35,6 +35,8 @@
 #include "strmanip.hpp"
 #include "shaderparser.h"
 
+#include "shadercompile.h"
+
 // Type conversions should be controlled by programmer explicitly - shadercompile makes use of 64-bit integer arithmetics
 #pragma warning( error : 4244 )
 
@@ -966,7 +968,7 @@ void SetupConfigurationDirect( const std::string& name, const std::string& versi
 		if ( V_IsAbsolutePath( file.c_str() ) )
 			strcpy_s( filename, file.c_str() );
 		else
-			sprintf_s( filename, "%s\\%s", g_pShaderPath.c_str(), file.c_str() );
+			sprintf( filename, "%s\\%s", g_pShaderPath.c_str(), file.c_str() );
 
 		std::ifstream src( filename, std::ios::binary | std::ios::ate );
 		if ( !src )
@@ -1085,7 +1087,7 @@ static void ProcessConfiguration( const char* pConfigFile )
 			if ( V_IsAbsolutePath( file.c_str() ) )
 				strcpy_s( filename, file.c_str() );
 			else
-				sprintf_s( filename, "%s\\%s", g_pShaderPath.c_str(), file.c_str() );
+				sprintf( filename, "%s\\%s", g_pShaderPath.c_str(), file.c_str() );
 
 			std::ifstream src( filename, std::ios::binary | std::ios::ate );
 			if ( !src )
