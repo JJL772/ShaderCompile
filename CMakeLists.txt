@@ -9,7 +9,7 @@ set(SRCS
 	ShaderCompile/utlbuffer.cpp
 	ShaderCompile/utlsymbol.cpp )
 
-include_directories(shared/include shared/gsl/include ShaderCompile/include)
+include_directories(shared/include shared/gsl/include ShaderCompile/include shared/dxc/include)
 
 add_executable(ShaderCompile ${SRCS})
 set_property(TARGET ShaderCompile PROPERTY CXX_STANDARD 20)

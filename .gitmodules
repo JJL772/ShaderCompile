@@ -1,3 +1,6 @@
 [submodule "shared/gsl"]
 	path = shared/gsl
 	url = https://github.com/microsoft/GSL.git
+[submodule "shared/dxc"]
+	path = shared/dxc
+	url = https://github.com/microsoft/DirectXShaderCompiler
