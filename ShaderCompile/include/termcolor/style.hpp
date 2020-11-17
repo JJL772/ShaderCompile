@@ -23,6 +23,10 @@
 
 #include <termcolor/termcolor.hpp>
 
+#if defined(__linux__) || defined(__apple__)
+#define __cdecl
+#endif
+
 #pragma push_macro("__reserved")
 #undef __reserved
 

@@ -802,23 +802,23 @@ void ComboHandleImpl::FormatCommand( std::span<char> pchBuffer )
 
 	{
 		// ------- OnCombo( nCurrentCombo ); ----------
-		int o = sprintf_s( pchBuffer.data(), pchBuffer.size(), "command" ) + 1;
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "%s", m_pEntry->m_szShaderSrc ) + 1;
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "%s", m_pEntry->m_eiInfo.m_szShaderVersion ) + 1;
+		int o = snprintf( pchBuffer.data(), pchBuffer.size(), "command" ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "%s", m_pEntry->m_szShaderSrc ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "%s", m_pEntry->m_eiInfo.m_szShaderVersion ) + 1;
 
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "SHADERCOMBO" ) + 1;
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "%llx", m_iComboNumber ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "SHADERCOMBO" ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "%llx", m_iComboNumber ) + 1;
 
 		char version[20];
 		strcpy_s( version, m_pEntry->m_eiInfo.m_szShaderVersion );
 		_strupr_s( version );
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "SHADER_MODEL_%s", version ) + 1;
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "1" ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "SHADER_MODEL_%s", version ) + 1;
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "1" ) + 1;
 
 		for ( pSetValues = pnValues, pSetDef = pDefVars; pSetValues < pnValuesEnd && pDefVars < pDefVarsEnd; ++pSetValues, ++pSetDef )
 		{
-			o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "%s", pSetDef->Name() ) + 1;
-			o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, "%d", *pSetValues ) + 1;
+			o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "%s", pSetDef->Name() ) + 1;
+			o += snprintf( &pchBuffer[o], pchBuffer.size() - o, "%d", *pSetValues ) + 1;
 		}
 
 		pchBuffer[o] = '\0';
@@ -844,14 +844,14 @@ void ComboHandleImpl::FormatCommandHumanReadable( std::span<char> pchBuffer )
 		char version[20];
 		strcpy_s( version, m_pEntry->m_eiInfo.m_szShaderVersion );
 		_strupr_s( version );
-		int o = sprintf_s( pchBuffer.data(), pchBuffer.size(),
+		int o = snprintf( pchBuffer.data(), pchBuffer.size(),
 			"fxc.exe /DCENTROIDMASK=%d /DSHADERCOMBO=%llx /DSHADER_MODEL_%s=1 /T%s /Emain",
 			m_pEntry->m_eiInfo.m_nCentroidMask, m_iComboNumber, version, m_pEntry->m_eiInfo.m_szShaderVersion );
 
 		for ( pSetValues = pnValues, pSetDef = pDefVars; pSetValues < pnValuesEnd && pDefVars < pDefVarsEnd; ++pSetValues, ++pSetDef )
-			o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, " /D%s=%d", pSetDef->Name(), *pSetValues );
+			o += snprintf( &pchBuffer[o], pchBuffer.size() - o, " /D%s=%d", pSetDef->Name(), *pSetValues );
 
-		o += sprintf_s( &pchBuffer[o], pchBuffer.size() - o, " %s", m_pEntry->m_szShaderSrc );
+		o += snprintf( &pchBuffer[o], pchBuffer.size() - o, " %s", m_pEntry->m_szShaderSrc );
 		// ------- end of OnCombo ---------------------
 
 		pchBuffer[o] = '\0';

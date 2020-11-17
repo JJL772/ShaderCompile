@@ -41,6 +41,9 @@ using errno_t = int;
 #undef strcat_s
 #undef strcpy_s
 
+/* Aligned allocations */
+#define _aligned_malloc aligned_alloc
+
 static inline errno_t strcat_s(char* __restrict dest, size_t sz, const char* __restrict src)
 {
 	strncat(dest, src, sz);
