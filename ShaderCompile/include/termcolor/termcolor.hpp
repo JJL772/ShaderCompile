@@ -37,6 +37,10 @@
 #   include <windows.h>
 #endif
 
+#ifdef TERMCOLOR_OS_LINUX
+#undef sprintf_s
+#define sprintf_s sprintf
+#endif
 
 #include <iostream>
 #include <cstdio>
