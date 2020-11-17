@@ -31,6 +31,12 @@ v0.2.2 20140504 Jose Santiago added compiler warning fixes.
 #include <sstream>
 #include <cstring>
 
+#ifndef _WIN32
+#undef sprintf_s
+#undef snprintf_s
+#define sprintf_s sprintf
+#endif
+
 #undef IN
 #undef min
 #undef max
