@@ -10,11 +10,10 @@
 #ifndef UTLMEMORY_H
 #define UTLMEMORY_H
 
-#ifdef _WIN32
-	#pragma once
-#endif
+#pragma once
 
 #include "basetypes.h"
+#include "shadercompile.h"
 #include <cstring>
 #include <malloc.h>
 #include <utility>
