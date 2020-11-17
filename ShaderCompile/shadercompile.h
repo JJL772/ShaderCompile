@@ -38,6 +38,9 @@ using errno_t = int;
 #define _unlink unlink
 #define sprintf_s snprintf
 
+#undef strcat_s
+#undef strcpy_s
+
 static inline errno_t strcat_s(char* __restrict dest, size_t sz, const char* __restrict src)
 {
 	strncat(dest, src, sz);
@@ -80,5 +83,15 @@ static inline void Sleep(DWORD dwMillis)
 {
 	usleep(dwMillis * 1000);
 }
+
+/* D3D FLAGS */
+enum {
+	D3DCOMPILE_PARTIAL_PRECISION = 1,
+	D3DCOMPILE_SKIP_VALIDATION = 2,
+	D3DCOMPILE_NO_PRESHADER = 4,
+	D3DCOMPILE_AVOID_FLOW_CONTROL = 8,
+	D3DCOMPILE_PREFER_FLOW_CONTROL = 16,
+	D3DCOMPILE_SKIP_OPTIMIZATION = 32,
+};
 
 #endif

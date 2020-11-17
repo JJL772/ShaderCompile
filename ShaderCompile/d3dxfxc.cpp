@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2006, Valve Corporation, All rights reserved. =======//
+//====== Copyright ï¿½ 1996-2006, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: D3DX command implementation.
 //
@@ -10,13 +10,31 @@
 
 #include "basetypes.h"
 #include "cmdsink.h"
-#include "d3dcompiler.h"
 #include "gsl/gsl_narrow"
 #include <span>
 #include <malloc.h>
 #include <vector>
 
-#pragma comment( lib, "D3DCompiler" )
+/* DirectX compiler includes */
+#include <dxc/dxctools.h>
+#include <dxc/dxcapi.h>
+#include <dxc/DXIL/DxilShaderModel.h>
+#include <dxc/DxilContainer/DxilContainer.h>
+#include <dxc/Support/Global.h>
+#include <dxc/Support/HLSLOptions.h>
+
+
+
+static void* GlobalDxcInstance()
+{
+	static void* pDxc = NULL;
+	if(!pDxc)
+	{
+		//HRESULT hr = DxcCreateInstance(CLSID_DxcCompiler, )
+
+	}
+	return pDxc;
+}
 
 CSharedFile::CSharedFile( std::vector<char>&& data ) : std::vector<char>( std::forward<std::vector<char>>( data ) )
 {
@@ -54,103 +72,6 @@ namespace InterceptFxc
 static constexpr const char s_pszCommand[] = "command";
 static constexpr size_t s_uCommandLen      = ARRAYSIZE( s_pszCommand );
 
-namespace Private
-{
-	struct DxIncludeImpl final : public ID3DInclude
-	{
-		STDMETHOD( Open )( THIS_ D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes ) override
-		{
-			const CSharedFile* file = fileCache.Get( pFileName );
-			if ( !file )
-				return E_FAIL;
-
-			*ppData = file->Data();
-			*pBytes = gsl::narrow<UINT>( file->Size() );
-
-			return S_OK;
-		}
-
-		STDMETHOD( Close )( THIS_ LPCVOID ) override
-		{
-			return S_OK;
-		}
-
-		virtual ~DxIncludeImpl() = default;
-	};
-	static DxIncludeImpl s_incDxImpl;
-
-	//
-	// Response implementation
-	//
-	class CResponse final : public CmdSink::IResponse
-	{
-	public:
-		explicit CResponse( ID3DBlob* pShader, ID3DBlob* pListing, HRESULT hr );
-		~CResponse() override;
-
-		bool Succeeded() override { return m_pShader && m_hr == S_OK; }
-		size_t GetResultBufferLen() override { return Succeeded() ? m_pShader->GetBufferSize() : 0; }
-		const void* GetResultBuffer() override { return Succeeded() ? m_pShader->GetBufferPointer() : nullptr; }
-		const char* GetListing() override { return static_cast<const char*>( m_pListing ? m_pListing->GetBufferPointer() : nullptr ); }
-
-	protected:
-		ID3DBlob* m_pShader;
-		ID3DBlob* m_pListing;
-		HRESULT m_hr;
-	};
-
-	CResponse::CResponse( ID3DBlob* pShader, ID3DBlob* pListing, HRESULT hr )
-		: m_pShader( pShader )
-		, m_pListing( pListing )
-		, m_hr( hr )
-	{
-	}
-
-	CResponse::~CResponse()
-	{
-		if ( m_pShader )
-			m_pShader->Release();
-
-		if ( m_pListing )
-			m_pListing->Release();
-	}
-
-	//
-	// Perform a fast shader file compilation.
-	//
-	// @param pszFilename		the filename to compile (e.g. "debugdrawenvmapmask_vs20.fxc")
-	// @param pMacros			null-terminated array of macro-defines
-	// @param pszModel			shader model for compilation
-	//
-	void FastShaderCompile( const char* pszFilename, std::span<const D3D_SHADER_MACRO> pMacros, const char* pszModel, CmdSink::IResponse** ppResponse, DWORD flags )
-	{
-		ID3DBlob* pShader        = nullptr; // NOTE: Must release the COM interface later
-		ID3DBlob* pErrorMessages = nullptr; // NOTE: Must release COM interface later
-
-		LPCVOID lpcvData = nullptr;
-		UINT numBytes    = 0;
-		HRESULT hr       = s_incDxImpl.Open( D3D_INCLUDE_LOCAL, pszFilename, nullptr, &lpcvData, &numBytes );
-		if ( !FAILED( hr ) )
-		{
-			hr = D3DCompile( lpcvData, numBytes, pszFilename, pMacros.data(), &s_incDxImpl, "main", pszModel, flags, 0, &pShader, &pErrorMessages );
-
-			// Close the file
-			s_incDxImpl.Close( lpcvData );
-		}
-
-		if ( ppResponse )
-			*ppResponse = new CResponse( pShader, pErrorMessages, hr );
-		else
-		{
-			if ( pShader )
-				pShader->Release();
-
-			if ( pErrorMessages )
-				pErrorMessages->Release();
-		}
-	}
-} // namespace Private
-
 //
 // Completely mimic the behaviour of "fxc.exe" in the specific cases related
 // to shader compilations.
@@ -160,6 +81,7 @@ namespace Private
 //
 void ExecuteCommand( const char* pCommand, CmdSink::IResponse** ppResponse, DWORD flags )
 {
+#if 0
 	// Expect that the command passed is exactly "fxc.exe"
 	Assert( !strncmp( pCommand, s_pszCommand, s_uCommandLen ) );
 	pCommand += s_uCommandLen;
@@ -185,8 +107,11 @@ void ExecuteCommand( const char* pCommand, CmdSink::IResponse** ppResponse, DWOR
 	// Add a NULL-terminator
 	macros.emplace_back( D3D_SHADER_MACRO { nullptr, nullptr } );
 
+
+
 	// Compile the stuff
 	Private::FastShaderCompile( pszFilename, macros, szShaderModel, ppResponse, flags );
+#endif
 }
 
 bool TryExecuteCommand( const char* pCommand, CmdSink::IResponse** ppResponse, DWORD flags )

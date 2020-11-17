@@ -1,7 +1,11 @@
-﻿#ifndef STRMANIP_HPP
-#define STRMANIP_HPP
+﻿#pragma once
 
+#include <iostream>
 #include <iomanip>
+
+#ifndef _WIN32
+#define __forceinline inline
+#endif
 
 static std::string PrettyPrintNumber( uint64_t k )
 {
@@ -16,61 +20,64 @@ static std::string PrettyPrintNumber( uint64_t k )
 	return pchPrint;
 }
 
-static void __PrettyPrintNumber( std::ios_base& s, uint64_t k )
+struct FormatTime
 {
-	dynamic_cast<std::ostream&>( s ) << PrettyPrintNumber( k );
-}
+	int64_t m_time;
+	FormatTime() = delete;
+	explicit FormatTime(int64_t time) :
+		m_time(time)
+	{
+	}
 
-static std::_Smanip<uint64_t> PrettyPrint( uint64_t i )
+	friend std::ostream& operator<<(std::ostream& o, const FormatTime& t)
+	{
+		int64_t nMinutes = t.m_time / 60;
+		const int64_t nSeconds = t.m_time - nMinutes * 60;
+		const int64_t nHours = nMinutes / 60;
+		nMinutes -= nHours * 60;
+
+		constexpr const char* const extra[2] = { "", "s" };
+
+		auto& str = dynamic_cast<std::ostream&>( o );
+		if ( nHours > 0 )
+			str << clr::green << nHours << clr::reset << " hour" << extra[nHours != 1] << ", " << clr::green << nMinutes << clr::reset << " minute" << extra[nMinutes != 1] << ", " << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
+		else if ( nMinutes > 0 )
+			str << clr::green << nMinutes << clr::reset << " minute" << extra[nMinutes != 1] << ", " << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
+		else
+			str << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
+		return o;
+	}
+};
+
+struct FormatTimeShort
 {
-	return { __PrettyPrintNumber, i };
-}
+	int64_t m_time;
+	FormatTimeShort() = delete;
+	explicit FormatTimeShort(int64_t time) :
+		m_time(time)
+	{
+	}
 
-static void __FormatTime( std::ios_base& s, int64_t nInputSeconds )
-{
-	int64_t nMinutes = nInputSeconds / 60;
-	const int64_t nSeconds = nInputSeconds - nMinutes * 60;
-	const int64_t nHours = nMinutes / 60;
-	nMinutes -= nHours * 60;
+	friend std::ostream& operator<<(std::ostream& o, const FormatTimeShort& t)
+	{
+		int64_t nMinutes = t.m_time / 60;
+		const int64_t nSeconds = t.m_time - nMinutes * 60;
+		const int64_t nHours = nMinutes / 60;
+		nMinutes -= nHours * 60;
 
-	constexpr const char* const extra[2] = { "", "s" };
+		constexpr const char* const extra[2] = { "", "s" };
 
-	auto& str = dynamic_cast<std::ostream&>( s );
-	if ( nHours > 0 )
-		str << clr::green << nHours << clr::reset << " hour" << extra[nHours != 1] << ", " << clr::green << nMinutes << clr::reset << " minute" << extra[nMinutes != 1] << ", " << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
-	else if ( nMinutes > 0 )
-		str << clr::green << nMinutes << clr::reset << " minute" << extra[nMinutes != 1] << ", " << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
-	else
-		str << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
-}
+		auto& str = dynamic_cast<std::ostream&>( o );
+		if ( nHours > 0 )
+			str << clr::green << nHours << clr::reset << ":" << clr::green << nMinutes << clr::reset << ":" << clr::green << nSeconds << clr::reset;
+		else if ( nMinutes > 0 )
+			str << clr::green << nMinutes << clr::reset << ":" << clr::green << nSeconds << clr::reset;
+		else
+			str << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
+		return o;
+	}
+};
 
-static void __FormatTime2( std::ios_base& s, int64_t nInputSeconds )
-{
-	int64_t nMinutes = nInputSeconds / 60;
-	const int64_t nSeconds = nInputSeconds - nMinutes * 60;
-	const int64_t nHours = nMinutes / 60;
-	nMinutes -= nHours * 60;
-
-	constexpr const char* const extra[2] = { "", "s" };
-
-	auto& str = dynamic_cast<std::ostream&>( s );
-	if ( nHours > 0 )
-		str << clr::green << nHours << clr::reset << ":" << clr::green << nMinutes << clr::reset << ":" << clr::green << nSeconds << clr::reset;
-	else if ( nMinutes > 0 )
-		str << clr::green << nMinutes << clr::reset << ":" << clr::green << nSeconds << clr::reset;
-	else
-		str << clr::green << nSeconds << clr::reset << " second" << extra[nSeconds != 1];
-}
-
-static std::_Smanip<int64_t> FormatTime( int64_t i )
-{
-	return { __FormatTime, i };
-}
-
-static std::_Smanip<int64_t> FormatTimeShort( int64_t i )
-{
-	return { __FormatTime2, i };
-}
 
 static __forceinline bool PATHSEPARATOR( char c )
 {
@@ -147,5 +154,3 @@ static void V_StrTrim( char* pStr )
 		// yep; shorten the string
 		*pLastWhiteBlock = 0;
 }
-
-#endif // STRMANIP_HPP

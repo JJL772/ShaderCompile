@@ -19,6 +19,9 @@
 #include <windows.h>
 #endif
 
+/* DXC Includes */
+#include <dxc/dxcapi.h>
+
 #include "shadercompile.h"
 
 #include <atomic>
@@ -821,7 +824,7 @@ static size_t AssembleWorkerReplyPackage( const CfgProcessor::CfgEntryInfo* pEnt
 
 		s_averageProcess.PushValue( s_nLastEntry - nComboOfEntry );
 		s_nLastEntry = nComboOfEntry;
-		std::cout << "\rCompiling " << ( g_ShaderHadError.contains( pEntry->m_szName ) ? clr::red : clr::green ) << pEntry->m_szName << clr::reset << " [ " << clr::blue << PrettyPrint( nComboOfEntry ) << clr::reset << " remaining ("
+		std::cout << "\rCompiling " << ( g_ShaderHadError.contains( pEntry->m_szName ) ? clr::red : clr::green ) << pEntry->m_szName << clr::reset << " [ " << clr::blue << PrettyPrintNumber( nComboOfEntry ) << clr::reset << " remaining ("
 				  << clr::green2 << s_averageProcess.GetAverage() << clr::reset << " c/m) ] " << FormatTimeShort( std::chrono::duration_cast<std::chrono::seconds>( fCurTime - g_flStartTime ).count() ) << " elapsed         \r";
 		s_fLastInfoTime = fCurTime;
 	}
@@ -1360,7 +1363,7 @@ static void Shared_ParseListOfCompileCommands()
 
 	const Clock::time_point tt_end = Clock::now();
 
-	std::cout << "\rCompiling " << clr::green << PrettyPrint( g_numCompileCommands ) << clr::reset << " commands, setup took " << clr::green << std::chrono::duration_cast<std::chrono::seconds>( tt_end - tt_start ).count() << clr::reset << " seconds.         \r";
+	std::cout << "\rCompiling " << clr::green << PrettyPrintNumber( g_numCompileCommands ) << clr::reset << " commands, setup took " << clr::green << std::chrono::duration_cast<std::chrono::seconds>( tt_end - tt_start ).count() << clr::reset << " seconds.         \r";
 }
 
 static void CompileShaders()
@@ -1544,6 +1547,7 @@ static void PrintCompileErrors()
 }
 
 static bool s_write = true;
+#ifdef _WIN32
 static BOOL WINAPI CtrlHandler( DWORD signal )
 {
 	if ( signal == CTRL_C_EVENT )
@@ -1557,6 +1561,7 @@ static BOOL WINAPI CtrlHandler( DWORD signal )
 
 	return FALSE;
 }
+#endif
 
 static void WriteStats()
 {
@@ -1578,6 +1583,7 @@ namespace PreprocessorDbg
 
 int main( int argc, const char* argv[] )
 {
+#ifdef _WIN32
 	{
 		const HANDLE console = GetStdHandle( STD_OUTPUT_HANDLE );
 		DWORD mode;
@@ -1585,6 +1591,7 @@ int main( int argc, const char* argv[] )
 		SetConsoleMode( console, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
 		SetConsoleCtrlHandler( CtrlHandler, true );
 	}
+#endif
 
 	cmdLine.overview = "Source shader compiler.";
 	cmdLine.syntax   = "ShaderCompile [OPTIONS] file.fxc";
@@ -1612,8 +1619,10 @@ int main( int argc, const char* argv[] )
 
 	if ( cmdLine.isSet( "-help" ) )
 	{
+#ifdef _WIN32
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
 		GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE ), &csbi );
+#endif
 		std::string usage;
 		cmdLine.getUsageDescriptions( usage, csbi.srWindow.Right - csbi.srWindow.Left + 1, ez::ezOptionParser::ALIGN );
 		std::cout << cmdLine.overview << "\n\n"
@@ -1704,11 +1713,13 @@ int main( int argc, const char* argv[] )
 	g_bFastFail = cmdLine.isSet( "-fastfail" );
 
 	// Setting up the minidump handlers
+#ifdef _WIN32
 	SetUnhandledExceptionFilter( ExceptionFilter );
 	SetThreadExecutionState( ES_CONTINUOUS | ES_SYSTEM_REQUIRED );
+#endif
 	Shared_ParseListOfCompileCommands();
 
-	std::cout << "\rCompiling " << clr::green << PrettyPrint( g_numCompileCommands ) << clr::reset << " commands in " << clr::green << PrettyPrint( g_numStaticCombos ) << clr::reset << " static combos.                      \r";
+	std::cout << "\rCompiling " << clr::green << PrettyPrintNumber( g_numCompileCommands ) << clr::reset << " commands in " << clr::green << PrettyPrintNumber( g_numStaticCombos ) << clr::reset << " static combos.                      \r";
 	CompileShaders();
 
 	WriteStats();
